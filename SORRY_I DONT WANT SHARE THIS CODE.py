@@ -191,6 +191,7 @@ def main():
     set_wallpaper("photo.jpeg")
     clear_desktop_icons()
     show_final_window()
+    play_music_loop()
     
     # Fermer la fenêtre et arrêter le listener après 5 secondes
     loading_window.after(5000, lambda: [loading_window.destroy(), listener.stop()])

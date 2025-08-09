@@ -15,6 +15,21 @@ import sys
 import threading
 from pynput import keyboard
 
+import pygame
+
+def play_music_loop():
+    pygame.mixer.init()
+    pygame.mixer.music.load("music.mp3")
+    pygame.mixer.music.set_volume(1.0)  # Volume max
+    pygame.mixer.music.play(-1)  # -1 pour boucle infinie
+    
+    # On bloque le thread pour pas que ça se coupe
+    try:
+        while True:
+            pygame.time.Clock().tick(10)
+    except KeyboardInterrupt:
+        pass  # Pour éviter la fermeture avec Ctrl+C dans la console
+
 #<<
 
 

@@ -1,6 +1,9 @@
 #### DONT TRY THIS
 
 import ctypes
+whnd = ctypes.windll.kernel32.GetConsoleWindow()
+if whnd != 0:
+    ctypes.windll.user32.ShowWindow(whnd, 0)
 import os
 import tkinter as tk
 from tkinter import messagebox

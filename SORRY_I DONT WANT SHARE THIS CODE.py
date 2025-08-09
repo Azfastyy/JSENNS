@@ -223,7 +223,7 @@ def main():
     # Effectuer les actions de verrouillage
    # hide_taskbar()
     disable_task_manager()
-    set_wallpaper("photo.jpeg")
+    set_wallpaper("IMG_7832.jpeg")
     clear_desktop_icons()
     play_music_loop()
     slideshow_images()

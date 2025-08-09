@@ -42,7 +42,7 @@ def play_music_loop():
 
 def boucle_erreurs_gui():
     root = tk.Tk()
-    root.title("bztp la grosse slp")
+    root.title("bztp la grosse slp ! ya une skibidi erreur ❤️")
     root.geometry("600x400")
 
     text_box = tk.Text(root, bg="black", fg="red", font=("Consolas", 12))

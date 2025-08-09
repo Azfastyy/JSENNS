@@ -43,7 +43,7 @@ def slideshow_images():
 
     images = []
     for i in range(1, 6):
-        path = f"skibidi{i}.png"
+        path = f"skibidi{i}.jpeg"
         if os.path.exists(path):
             img = Image.open(path)
             img = img.resize((root.winfo_screenwidth(), root.winfo_screenheight()), Image.ANTIALIAS)

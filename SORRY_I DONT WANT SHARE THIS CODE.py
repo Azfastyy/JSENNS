@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import winreg
 import win32gui
 import win32con

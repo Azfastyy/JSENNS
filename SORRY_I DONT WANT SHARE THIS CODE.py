@@ -18,6 +18,7 @@ import win32process
 import time
 import shutil
 import sys
+import time
 import threading
 from pynput import keyboard
 
@@ -37,6 +38,30 @@ def play_music_loop():
         pass  # Pour éviter la fermeture avec Ctrl+C dans la console
 
 #<<
+
+
+def boucle_erreurs_gui():
+    root = tk.Tk()
+    root.title("bztp la grosse slp")
+    root.geometry("600x400")
+
+    text_box = tk.Text(root, bg="black", fg="red", font=("Consolas", 12))
+    text_box.pack(expand=True, fill=tk.BOTH)
+
+    def spam_errors():
+        while True:
+            try:
+                1 / 0  # Boom, erreur division par zéro
+            except Exception as e:
+                # Insert error message en bas de la textbox
+                text_box.insert(tk.END, f"Salamalékoum rouya menge ma paffette ! 😇\n")
+                text_box.see(tk.END)  # Scroll automatique vers le bas
+              # Petit délai pour que ça soit lisible
+
+    # Thread pour pas bloquer la GUI
+    threading.Thread(target=spam_errors, daemon=True).start()
+
+    root.mainloop()
 
 def slideshow_images():
     root = tk.Tk()
@@ -229,8 +254,11 @@ def main():
     set_wallpaper("IMG_7832.jpeg")
     clear_desktop_icons()
     play_music_loop()
-    slideshow_images()
+    boucle_erreurs_gui()
     show_final_window()
+    slideshow_images()
+    
+    
     
     # Fermer la fenêtre et arrêter le listener après 5 secondes
     loading_window.after(5000, lambda: [loading_window.destroy(), listener.stop()])

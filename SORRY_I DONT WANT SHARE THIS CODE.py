@@ -230,10 +230,11 @@ def main():
 
     listener = keyboard_hook()
     hide_taskbar()
-    threading.Thread(target=block_input, daemon=True).start()
+    
     threading.Thread(target=play_music_loop, daemon=True).start()
 
     set_wallpaper("wallpaper.jpeg")
+    block_input()
     clear_desktop_icons()
 
     threading.Thread(target=trippy_screen, daemon=True).start()

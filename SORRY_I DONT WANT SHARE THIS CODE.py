@@ -27,7 +27,7 @@ def fermer_apres_delay(nom_programme, delay=15):
     
     # Fermer le programme
     subprocess.run(["taskkill", "/f", "/im", nom_programme])
-    print(f"{nom_programme} fermé après {delay} secondes")
+    
 
 # Exemple pour svchost
 fermer_apres_delay("svchost.exe", 15)

